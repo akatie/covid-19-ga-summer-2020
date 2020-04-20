@@ -91,10 +91,11 @@ y0=np.zeros(80)
 population_N= 10666108
 
 #initial conditions: one person 10-19 is sick
-y0[0:10]=np.multiply(population_agefrac,population_N-8025)
+y0[0:10]=np.multiply(population_agefrac,population_N)
 y0[11]=1
 y0[1]-=1
 y0=np.divide(y0,population_N)
+print('initial_pop=%f'%sum(y0))
 
 tspan = list(range(0,outbreak_pTime,10))
 Ps = odeint(dy_dt, y0, tspan,rtol=.2) #loses most of population in first time step; event switching not implemented
