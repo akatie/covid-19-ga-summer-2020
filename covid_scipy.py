@@ -2,27 +2,30 @@ from scipy.integrate import odeint
 import numpy as np
 import matplotlib as plt
 
-def dy_dt(dy,t): 
+def SEIRD_model(y,t): 
+	#left dydt	
+	#right y
 	#print statements, set itota, itots
+	dydt=np.zeros(len(y))
 	qqq='SEIiUCRD'
-	print("===timestep=%i,pop=%f"%(t,sum(dy)))
+	print("===timestep=%i,pop=%f"%(t,sum(y)))
 	for i in range(8):
-		cl=dy[i*10:(i+1)*10]
+		cl=y[i*10:(i+1)*10]
 		# print(qqq[i],cl,sum(cl)) #prints each class 
 		if i==2:
 			Itot_a=sum(cl)
 		elif i==3:
 			Itot_s=sum(cl)
 	for i in range(0, 10):
-		dy[0*10+i] = -pars_beta_a*dy[0*10+i]*Itot_a - pars_beta_s*dy[0*10+i]*Itot_s
-		dy[1*10+i] = pars_beta_a*dy[0*10+i]*Itot_a + pars_beta_s*dy[0*10+i]*Itot_s - pars_gamma_e*dy[1*10+i]
-		dy[2*10+i] = pars_p[i]*pars_gamma_e*dy[1*10+i] - pars_gamma_a * dy[2*10+i]
-		dy[3*10+i] = (1 - pars_p[i])*pars_gamma_e*dy[1*10+i] - pars_gamma_s*dy[3*10+i]
-		dy[4*10+i] = agepars_hosp_frac[i]*(1 - agepars_hosp_crit[i])*pars_gamma_s*dy[3*10+i] - pars_gamma_h*dy[4*10+i]
-		dy[5*10+i] = agepars_hosp_frac[i]*agepars_hosp_crit[i]*pars_gamma_s*dy[3*10+i] - pars_gamma_h * dy[5*10+i]
-		dy[6*10+i] = pars_gamma_a*dy[2*10+i] + (1 - agepars_hosp_frac[i])*pars_gamma_s*dy[3*10+i] + pars_gamma_h*dy[4*10+i] + (1 - agepars_crit_die[i])*pars_gamma_h*dy[5*10+i]
-		dy[7*10+i] = agepars_crit_die[i]*pars_gamma_h*dy[5*10+i]
-	return dy
+		dydt[0*10+i] = -pars_beta_a*y[0*10+i]*Itot_a - pars_beta_s*y[0*10+i]*Itot_s
+		dydt[1*10+i] = pars_beta_a*y[0*10+i]*Itot_a + pars_beta_s*y[0*10+i]*Itot_s - pars_gamma_e*y[1*10+i]
+		dydt[2*10+i] = pars_p[i]*pars_gamma_e*y[1*10+i] - pars_gamma_a * y[2*10+i]
+		dydt[3*10+i] = (1 - pars_p[i])*pars_gamma_e*y[1*10+i] - pars_gamma_s*y[3*10+i]
+		dydt[4*10+i] = agepars_hosp_frac[i]*(1 - agepars_hosp_crit[i])*pars_gamma_s*y[3*10+i] - pars_gamma_h*y[4*10+i]
+		dydt[5*10+i] = agepars_hosp_frac[i]*agepars_hosp_crit[i]*pars_gamma_s*y[3*10+i] - pars_gamma_h * y[5*10+i]
+		dydt[6*10+i] = pars_gamma_a*y[2*10+i] + (1 - agepars_hosp_frac[i])*pars_gamma_s*y[3*10+i] + pars_gamma_h*y[4*10+i] + (1 - agepars_crit_die[i])*pars_gamma_h*y[5*10+i]
+		dydt[7*10+i] = agepars_crit_die[i]*pars_gamma_h*y[5*10+i]
+	return dydt
 
 ###=====================
 agepars_meanage_in=np.arange(5,95,10)
@@ -58,7 +61,7 @@ agepars_hosp_crit = [x / 100 for x in agepars_hosp_crit_in]
 agepars_crit_die= 0.5*np.ones(len(agepars_meanage)+1) ## CHECK
 agepars_num_ages = len(agepars_meanage);
 N=agepars_num_ages;
-agepars_S_ids= (1,N)
+agepars_S_ids= (1,N) # different age parameters, specific hazards
 agepars_E_ids= ((N+1),(2*N))
 agepars_Ia_ids=((2*N+1),(3*N))
 agepars_Is_ids=((3*N+1),(4*N))
@@ -98,7 +101,7 @@ y0=np.divide(y0,population_N)
 print('initial_pop=%f'%sum(y0))
 
 tspan = list(range(0,outbreak_pTime,10))
-Ps = odeint(dy_dt, y0, tspan,rtol=.2) #loses most of population in first time step; event switching not implemented
+Ps = odeint(SEIRD_model, y0, tspan) #loses most of population in first time step; event switching not implemented
 
 plt.plot(Ps)
 plt.show()
